@@ -31,11 +31,33 @@ try {
   await page.locator('#passwordSetup').waitFor({state:'visible',timeout:60000});
   const password=randomBytes(24).toString('base64url')+'aA9!';
   await page.locator('#newPassword').fill(password);await page.locator('#confirmPassword').fill(password);
+  // Force one password-validation rejection at the HTTP boundary, then retry
+  // against real Supabase. This reproduces the session-clearing regression.
+  await app.evaluate(() => {
+    const original = globalThis.fetch;
+    globalThis.fetch = async (url, options) => {
+      if (String(url).includes('/auth/v1/user') && options?.method === 'PUT') {
+        globalThis.fetch = original;
+        return new Response(JSON.stringify({code:'weak_password',msg:'Password rejected for regression test',weak_password:{reasons:['characters']}}),{status:422});
+      }
+      return original(url, options);
+    };
+  });
+  await page.getByRole('button',{name:'Finish account setup'}).click();
+  await until(async()=>(await page.locator('#message').innerText()).includes('Password rejected'),'rejected password response');
+  assert.equal((await state()).needsPassword,true);
+  pass('Rejected password attempt keeps the authenticated setup session');
   await page.getByRole('button',{name:'Finish account setup'}).click();
   await page.locator('#tracker').waitFor({state:'visible',timeout:60000});
   assert.equal((await state()).needsPassword,false);pass('Live sign-in and first-use password setup');
   await until(async()=>await app.evaluate(({powerMonitor})=>powerMonitor.getSystemIdleTime()<10),'real Windows input activity',20000);
   pass('Runner receives real simulated mouse input without mocking idle detection');
+  await app.close();
+  app=await electron.launch({executablePath:process.env.WORKTRAIL_EXE,timeout:60000});
+  page=await app.firstWindow();
+  await page.locator('#tracker').waitFor({state:'visible',timeout:60000});
+  assert.equal((await state()).needsPassword,false);
+  pass('Successful retry and encrypted session survive app restart');
   await page.locator('#note').fill('Automated Windows installer acceptance');
   await page.locator('#consent').check();await page.locator('#start').click();
   await until(async()=>{const s=await state(); return !!s.running && !!s.lastCapture && !s.busy;},'first live capture',90000);

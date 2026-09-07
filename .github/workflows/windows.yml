@@ -20,13 +20,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download v1.0.1 --repo $env:GITHUB_REPOSITORY --pattern Worktrail-1.0.1-win-x64.exe
-          $hash = (Get-FileHash Worktrail-1.0.1-win-x64.exe -Algorithm SHA256).Hash.ToLower()
-          if ($hash -ne '7fcf9b88fb31515c83661dc1b9fdd1a3a78eea75468082e51574b8796e5f7581') { throw 'Installer checksum mismatch' }
+          gh release download v1.0.2 --repo $env:GITHUB_REPOSITORY --pattern Worktrail-1.0.2-win-x64.exe
+          $hash = (Get-FileHash Worktrail-1.0.2-win-x64.exe -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne '75fea48927ec4bd0ca5382ce63f493d1a7094020b1b0e0b17f50cfe977a5b3d3') { throw 'Installer checksum mismatch' }
       - name: Install normally for current user
         shell: pwsh
         run: |
-          $proc = Start-Process -FilePath '.\Worktrail-1.0.1-win-x64.exe' -ArgumentList '/S' -Wait -PassThru
+          $proc = Start-Process -FilePath '.\Worktrail-1.0.2-win-x64.exe' -ArgumentList '/S' -Wait -PassThru
           if ($proc.ExitCode -ne 0) { throw "Installer exit code $($proc.ExitCode)" }
           Get-Process Worktrail -ErrorAction SilentlyContinue | Stop-Process -Force
           $exe = Join-Path $env:LOCALAPPDATA 'Programs\worktrail-desktop\Worktrail.exe'
