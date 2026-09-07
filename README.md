@@ -2,9 +2,9 @@
 
 Download the Windows pilot installer:
 
-**[Download Worktrail for Windows](https://github.com/cjkmju-gif/worktrail-downloads/releases/download/v1.0.1/Worktrail-1.0.1-win-x64.exe)**
+**[Download Worktrail for Windows](https://github.com/cjkmju-gif/worktrail-downloads/releases/download/v1.0.2/Worktrail-1.0.2-win-x64.exe)**
 
-1. Open the downloaded installer and follow the prompts.
+1. Quit any older Worktrail app, then open the downloaded installer and follow the prompts.
 2. Open Worktrail and sign in with the login your administrator gives you privately.
 3. Choose your own password when prompted.
 4. Select a project, acknowledge screenshots, and click **Clock in**.
@@ -19,9 +19,9 @@ Connect your monitors, close private windows, and use the computer normally for 
 
 This is an unsigned pilot installer. Windows may show an unknown-publisher warning. Keep Windows security enabled; report the exact warning if installation is blocked. This release needs an employee test on their actual Windows computer before wider rollout.
 
-**[Windows installer acceptance passed on September 7, 2026](https://github.com/cjkmju-gif/worktrail-downloads/actions/runs/34153143207).** Installation, login, password setup, live capture upload, time tracking, breaks, resume, clock-out and sign-out passed on Windows Server 2022 x64 with one virtual display. They use an isolated hosted Windows machine and a disposable test account; they do not prove compatibility with every employee computer or monitor arrangement.
+**[Windows installer acceptance passed on September 7, 2026](https://github.com/cjkmju-gif/worktrail-downloads/actions/runs/34155580580).** Version 1.0.2 additionally verifies a rejected password attempt followed by a successful retry and session persistence after restarting. Installation, login, password setup, live capture upload, time tracking, breaks, resume, clock-out and sign-out passed on Windows Server 2022 x64 with one virtual display. They use an isolated hosted Windows machine and a disposable test account; they do not prove compatibility with every employee computer or monitor arrangement.
 
 Screenshots are collected only while clocked in. Breaks, clock-out, screen lock, sleep, or connection failure stop tracking. Screenshots and account access remain private to the workspace; no passwords are published here.
 
 SHA-256 of the installer:
-`7fcf9b88fb31515c83661dc1b9fdd1a3a78eea75468082e51574b8796e5f7581`
+`75fea48927ec4bd0ca5382ce63f493d1a7094020b1b0e0b17f50cfe977a5b3d3`
