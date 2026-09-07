@@ -19,7 +19,7 @@ Connect your monitors, close private windows, and use the computer normally for 
 
 This is an unsigned pilot installer. Windows may show an unknown-publisher warning. Keep Windows security enabled; report the exact warning if installation is blocked. This release needs an employee test on their actual Windows computer before wider rollout.
 
-Automated Windows checks are tracked under [Actions](https://github.com/cjkmju-gif/worktrail-downloads/actions). They use an isolated hosted Windows machine and a disposable test account; they do not prove compatibility with every employee computer or monitor arrangement.
+**[Windows installer acceptance passed on September 7, 2026](https://github.com/cjkmju-gif/worktrail-downloads/actions/runs/34153143207).** Installation, login, password setup, live capture upload, time tracking, breaks, resume, clock-out and sign-out passed on Windows Server 2022 x64 with one virtual display. They use an isolated hosted Windows machine and a disposable test account; they do not prove compatibility with every employee computer or monitor arrangement.
 
 Screenshots are collected only while clocked in. Breaks, clock-out, screen lock, sleep, or connection failure stop tracking. Screenshots and account access remain private to the workspace; no passwords are published here.
 
