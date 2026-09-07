@@ -1,0 +1,1 @@
+{"name":"worktrail-installer-checks","private":true,"type":"module","scripts":{"test:windows":"node tests/windows-installed.mjs"},"devDependencies":{"playwright":"1.63.0"}}

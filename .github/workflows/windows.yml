@@ -1,0 +1,49 @@
+name: Windows installer acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  installed-app:
+    runs-on: windows-2022
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Download and verify published installer
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v1.0.1 --repo $env:GITHUB_REPOSITORY --pattern Worktrail-1.0.1-win-x64.exe
+          $hash = (Get-FileHash Worktrail-1.0.1-win-x64.exe -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne '7fcf9b88fb31515c83661dc1b9fdd1a3a78eea75468082e51574b8796e5f7581') { throw 'Installer checksum mismatch' }
+      - name: Install normally for current user
+        shell: pwsh
+        run: |
+          $proc = Start-Process -FilePath '.\Worktrail-1.0.1-win-x64.exe' -ArgumentList '/S' -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "Installer exit code $($proc.ExitCode)" }
+          Get-Process Worktrail -ErrorAction SilentlyContinue | Stop-Process -Force
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\worktrail-desktop\Worktrail.exe'
+          if (!(Test-Path $exe)) {
+            $exe = Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Programs') -Filter Worktrail.exe -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          }
+          if (!$exe) { throw 'Installed Worktrail.exe not found' }
+          "WORKTRAIL_EXE=$exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Test installed app, live tracking, capture, breaks and clock out
+        run: npm run test:windows
+        env:
+          WT_TEST_EMAIL: ${{ secrets.WT_TEST_EMAIL }}
+          WT_TEST_PASSWORD: ${{ secrets.WT_TEST_PASSWORD }}
+      - name: Save acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-acceptance
+          path: artifacts/
+          retention-days: 3
