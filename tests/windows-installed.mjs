@@ -2,9 +2,10 @@ import { _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
+import { spawn } from 'node:child_process';
 const results = { platform: process.platform, checks: [], started: new Date().toISOString() };
 await mkdir('artifacts', {recursive:true});
-let app, page;
+let app, page, input;
 function pass(name) { results.checks.push(name); console.log('PASS: '+name); }
 const sleep = ms => new Promise(r => setTimeout(r,ms));
 async function state() { const r=await page.evaluate(()=>window.worktrail.status()); assert.equal(r.ok,true);return r.data; }
@@ -12,6 +13,7 @@ async function until(fn, label, ms=60000) { const end=Date.now()+ms; while(Date.
 try {
   assert.equal(process.platform,'win32');
   assert.ok(process.env.WT_TEST_EMAIL && process.env.WT_TEST_PASSWORD,'Dedicated test credentials required');
+  input=spawn('powershell.exe',['-NoProfile','-File','tests/keep-active.ps1'],{stdio:'inherit'});
   app=await electron.launch({executablePath:process.env.WORKTRAIL_EXE, timeout:60000});
   page=await app.firstWindow();
   await page.locator('#login').waitFor({state:'visible'});
@@ -32,6 +34,8 @@ try {
   await page.getByRole('button',{name:'Finish account setup'}).click();
   await page.locator('#tracker').waitFor({state:'visible',timeout:60000});
   assert.equal((await state()).needsPassword,false);pass('Live sign-in and first-use password setup');
+  await until(async()=>await app.evaluate(({powerMonitor})=>powerMonitor.getSystemIdleTime()<10),'real Windows input activity',20000);
+  pass('Runner receives real simulated mouse input without mocking idle detection');
   await page.locator('#note').fill('Automated Windows installer acceptance');
   await page.locator('#consent').check();await page.locator('#start').click();
   await until(async()=>{const s=await state(); return !!s.running && !!s.lastCapture && !s.busy;},'first live capture',90000);
@@ -56,5 +60,6 @@ try {
 finally {
   if(page) {try {await page.evaluate(()=>window.worktrail.stop('clock_out'));}catch{} }
   if(app)await app.close().catch(()=>{});
+  input?.kill();
   results.finished=new Date().toISOString();await writeFile('artifacts/result.json',JSON.stringify(results,null,2));
 }
