@@ -44,14 +44,16 @@ try {
   await until(async()=>(await state()).todaySeconds>first.todaySeconds+15,'server time accrual',70000);
   pass('Live server heartbeat credits tracked time');
   await page.locator('#break').click();await until(async()=>{const s=await state();return !s.running&&!s.busy;},'break');
-  const paused=await state();await sleep(25000);await page.locator('#refresh').click();
+  await until(async()=>(await page.locator('#message').innerText())==='On break. Screenshots are stopped.','break server acknowledgement');
+  const paused=await state();await sleep(25000);await page.evaluate(()=>window.worktrail.refresh());
   await until(async()=>!(await state()).busy,'refresh');const after=await state();
   assert.equal(after.running,null);assert.equal(after.lastCapture,paused.lastCapture);assert.equal(after.todaySeconds,paused.todaySeconds);
   pass('Break stops time and screenshot capture');
   await page.locator('#consent').check();await page.locator('#start').click();
   await until(async()=>{const s=await state();return !!s.running&&!s.busy&&s.lastCapture!==paused.lastCapture;},'resume and capture',90000);
   await page.locator('#stop').click();await until(async()=>{const s=await state();return !s.running&&!s.busy;},'clock out');
-  const stopped=await state();await sleep(25000);await page.locator('#refresh').click();
+  await until(async()=>(await page.locator('#message').innerText())==='Clocked out. Screenshots are stopped.','clock out server acknowledgement');
+  const stopped=await state();await sleep(25000);await page.evaluate(()=>window.worktrail.refresh());
   await until(async()=>!(await state()).busy,'refresh');const final=await state();assert.equal(final.running,null);assert.equal(final.lastCapture,stopped.lastCapture);assert.equal(final.todaySeconds,stopped.todaySeconds);
   pass('Resume captures again; manual clock out stops time and captures');
   await page.locator('#logout').click();await page.locator('#login').waitFor({state:'visible'});
